@@ -1,31 +1,40 @@
 #include "imgui.h"
-#include "backends/imgui_impl_sdl3.h"
-#include "backends/imgui_impl_sdlrenderer3.h"
+#include "backends/imgui_impl_sdl2.h"
+#include "backends/imgui_impl_sdlrenderer2.h"
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
+#include <SDL2/SDL.h>
 
-int main(int, char**)
+int main(int, char **)
 {
-    // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    {
+        SDL_Log("SDL_Init failed: %s", SDL_GetError());
         return 1;
+    }
 
-    SDL_Window* window = SDL_CreateWindow("ImGui Example", 800, 600, SDL_WINDOW_RESIZABLE);
-    if (!window)
+    SDL_Window *win = SDL_CreateWindow("ImGui + SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                       800, 600, SDL_WINDOW_RESIZABLE);
+    if (!win)
+    {
+        SDL_Log("CreateWindow failed: %s", SDL_GetError());
+        SDL_Quit();
         return 1;
+    }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
-    if (!renderer)
+    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!ren)
+    {
+        SDL_Log("CreateRenderer failed: %s", SDL_GetError());
+        SDL_DestroyWindow(win);
+        SDL_Quit();
         return 1;
+    }
 
-    // Setup ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-
-    ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
-    ImGui_ImplSDLRenderer3_Init(renderer);
+    ImGui_ImplSDL2_InitForSDLRenderer(win, ren);
+    ImGui_ImplSDLRenderer2_Init(ren);
 
     bool running = true;
     while (running)
@@ -33,36 +42,31 @@ int main(int, char**)
         SDL_Event e;
         while (SDL_PollEvent(&e))
         {
-            if (e.type == SDL_EVENT_QUIT)
+            if (e.type == SDL_QUIT)
                 running = false;
-            ImGui_ImplSDL3_ProcessEvent(&e);
+            ImGui_ImplSDL2_ProcessEvent(&e);
         }
 
-        // Start ImGui frame
-        ImGui_ImplSDLRenderer3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
+        ImGui_ImplSDLRenderer2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        // A simple ImGui window
         ImGui::Begin("Hello");
-        ImGui::Text("Hello, world!");
+        ImGui::Text("Hello, SDL2 + ImGui!");
         ImGui::End();
 
-        // Rendering
         ImGui::Render();
-        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-        SDL_RenderClear(renderer);
-        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
-        SDL_RenderPresent(renderer);
+        SDL_SetRenderDrawColor(ren, 30, 30, 30, 255);
+        SDL_RenderClear(ren);
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), ren);
+        SDL_RenderPresent(ren);
     }
 
-    // Cleanup
-    ImGui_ImplSDLRenderer3_Shutdown();
-    ImGui_ImplSDL3_Shutdown();
+    ImGui_ImplSDLRenderer2_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(ren);
+    SDL_DestroyWindow(win);
     SDL_Quit();
     return 0;
 }

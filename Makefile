@@ -1,40 +1,34 @@
-######################################################
-# Declare some Makefile Variables
-######################################################
-CC = g++
+CC := g++
+CXXFLAGS := -std=c++17 -Wall -Wfatal-errors
 
-LANG_STD = -std=c++17
+# System SDL2 via pkg-config
+PKG_CFLAGS := $(shell pkg-config --cflags sdl2)
+PKG_LIBS   := $(shell pkg-config --libs sdl2)
 
-COMPILER_FLAGS = -Wall -Wfatal-errors
+# ImGui paths (submodule)
+IMGUI_DIR := ./libraries/imgui
 
-INCLUDE_PATH = 	-I"./libraries/imgui" \
-				-I"./libraries/imgui/backends" \
-				-I"./libraries/vendored/SDL/include"
+INCLUDES := -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends $(PKG_CFLAGS)
+SOURCES  := ./src/*.cpp \
+            $(IMGUI_DIR)/imgui.cpp \
+            $(IMGUI_DIR)/imgui_draw.cpp \
+            $(IMGUI_DIR)/imgui_tables.cpp \
+            $(IMGUI_DIR)/imgui_widgets.cpp \
+            $(IMGUI_DIR)/backends/imgui_impl_sdl2.cpp \
+            $(IMGUI_DIR)/backends/imgui_impl_sdlrenderer2.cpp
 
-SRC_FILES = ./src/*.cpp \
-            ./libraries/imgui/imgui.cpp \
-            ./libraries/imgui/imgui_draw.cpp \
-            ./libraries/imgui/imgui_tables.cpp \
-            ./libraries/imgui/imgui_widgets.cpp \
-            ./libraries/imgui/backends/imgui_impl_sdl3.cpp \
-            ./libraries/imgui/backends/imgui_impl_sdlrenderer3.cpp
+BIN := logger
 
-LINKER_FLAGS = 	-L./libraries/vendored/SDL/build -lSDL3 \
-				-Wl,-rpath,'$$ORIGIN/libraries/vendored/SDL/build'
+.PHONY: build run clean
 
-OBJ_NAME = logger
-
-######################################################
-# Declare some Makefile rules
-######################################################
-build: clean
+build:
 	@echo "building..."
-	@$(CC) $(COMPILER_FLAGS) $(LANG_STD) $(INCLUDE_PATH) $(SRC_FILES) $(LINKER_FLAGS) -o $(OBJ_NAME)
+	@$(CC) $(CXXFLAGS) $(INCLUDES) $(SOURCES) -o $(BIN) $(PKG_LIBS)
 
-run: 
+run:
 	@echo "running..."
-	@./$(OBJ_NAME)
+	@./$(BIN)
 
 clean:
 	@echo "cleaning..."
-	@rm -f $(OBJ_NAME)
+	@rm -f $(BIN)
