@@ -1,72 +1,39 @@
-#include "imgui.h"
-#include "backends/imgui_impl_sdl2.h"
-#include "backends/imgui_impl_sdlrenderer2.h"
+#include "WindowManager.h"
+#include "LoggerUI.h"
+#include "LogBuffer.h"
 
-#include <SDL2/SDL.h>
+#include <atomic>
+#include <thread>
+
+static void producer(LogBuffer &buffer, std::atomic<bool> &alive)
+{
+    while (alive.load(std::memory_order_relaxed))
+    {
+        buffer.push({"12342132", "EXAMPLE_APP", "SOME MESSAGE"});
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    }
+}
 
 int main(int, char **)
 {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    LogBuffer buffer(1000);
+    LoggerUI ui(buffer);
+
+    std::atomic<bool> producer_alive{true};
+    std::thread t(producer, std::ref(buffer), std::ref(producer_alive));
+
+    WindowManager windowManager;
+    if (!windowManager.initialize("Hello World", 800, 600, false))
     {
-        SDL_Log("SDL_Init failed: %s", SDL_GetError());
+        producer_alive = false;
+        t.join();
         return 1;
     }
 
-    SDL_Window *win = SDL_CreateWindow("ImGui + SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                       800, 600, SDL_WINDOW_RESIZABLE);
-    if (!win)
-    {
-        SDL_Log("CreateWindow failed: %s", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
+    windowManager.loop(ui);
 
-    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!ren)
-    {
-        SDL_Log("CreateRenderer failed: %s", SDL_GetError());
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        return 1;
-    }
+    producer_alive = false;
+    t.join();
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui::StyleColorsDark();
-    ImGui_ImplSDL2_InitForSDLRenderer(win, ren);
-    ImGui_ImplSDLRenderer2_Init(ren);
-
-    bool running = true;
-    while (running)
-    {
-        SDL_Event e;
-        while (SDL_PollEvent(&e))
-        {
-            if (e.type == SDL_QUIT)
-                running = false;
-            ImGui_ImplSDL2_ProcessEvent(&e);
-        }
-
-        ImGui_ImplSDLRenderer2_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
-
-        ImGui::Begin("Hello");
-        ImGui::Text("Hello, SDL2 + ImGui!");
-        ImGui::End();
-
-        ImGui::Render();
-        SDL_SetRenderDrawColor(ren, 30, 30, 30, 255);
-        SDL_RenderClear(ren);
-        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), ren);
-        SDL_RenderPresent(ren);
-    }
-
-    ImGui_ImplSDLRenderer2_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
-    SDL_DestroyRenderer(ren);
-    SDL_DestroyWindow(win);
-    SDL_Quit();
     return 0;
 }
