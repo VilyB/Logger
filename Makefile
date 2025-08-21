@@ -17,7 +17,7 @@ SOURCES  := ./src/*.cpp \
             $(IMGUI_DIR)/backends/imgui_impl_sdl2.cpp \
             $(IMGUI_DIR)/backends/imgui_impl_sdlrenderer2.cpp
 
-BIN := logger
+BIN := bin/logger
 
 .PHONY: build run clean
 
