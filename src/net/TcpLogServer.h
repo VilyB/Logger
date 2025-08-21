@@ -62,7 +62,7 @@ private:
                         std::string line = pending.substr(0, nl);
                         pending.erase(0, nl + 1);
 
-                        if (auto e = parseEntryJson(std::string_view(line)))
+                        if (auto e = parseEntryJson(line))
                         {
                             m_logBuffer.push(*e);
                             m_fileLogger.log(*e);

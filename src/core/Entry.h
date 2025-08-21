@@ -12,37 +12,37 @@ struct Entry
 ////////////////////////////////////////////////////////////////
 // Utility Functions
 ////////////////////////////////////////////////////////////////
-static std::optional<Entry> parseEntryJson(std::string_view s)
+static std::optional<Entry> parseEntryJson(const std::string &message)
 {
-    auto get = [&](std::string_view key) -> std::string
+    auto get = [&](const std::string &key) -> std::string
     {
-        std::string pat = "\"" + std::string(key) + "\"";
+        std::string pattern = "\"" + std::string(key) + "\"";
 
-        auto k = s.find(pat);
+        auto k = message.find(pattern);
         if (k == std::string::npos)
         {
             return {};
         }
 
-        auto c = s.find(':', k + pat.size());
-        if (c == std::string::npos)
+        auto colon = message.find(':', k + pattern.size());
+        if (colon == std::string::npos)
         {
             return {};
         }
 
-        auto q1 = s.find('"', c + 1);
-        if (q1 == std::string::npos)
+        auto startQuote = message.find('"', colon + 1);
+        if (startQuote == std::string::npos)
         {
             return {};
         }
 
-        auto q2 = s.find('"', q1 + 1);
-        if (q2 == std::string::npos)
+        auto endQuote = message.find('"', startQuote + 1);
+        if (endQuote == std::string::npos)
         {
             return {};
         }
 
-        return std::string(s.substr(q1 + 1, q2 - q1 - 1));
+        return std::string(message.substr(startQuote + 1, endQuote - startQuote - 1));
     };
 
     Entry e{get("timestamp"), get("app"), get("message")};

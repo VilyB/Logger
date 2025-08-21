@@ -1,0 +1,41 @@
+@startuml
+
+actor Client
+participant TcpLogServer
+participant FileLogger
+participant WindowManager
+participant LoggerUI
+participant LogFile <<external>> 
+participant LogBuffer <<DB>>
+
+== Connection ==
+note over Client
+    Initiate a TCP connection on hardcoded
+    host: 127.0.0.1
+    port: 8000
+end note
+Client -> TcpLogServer: connect(clientSocket, serverAddress)
+TcpLogServer ->Client: accept(serverSocket)
+
+== Receive Data ==
+loop
+Client -> TcpLogServer: send(clientSocket, message, std::strlen(message), 0);
+note over Client
+    Client sleeps for 250ms in between messages
+end note
+TcpLogServer -> LogBuffer: push(Entry)
+TcpLogServer -> FileLogger: log(Entry)
+FileLogger -> LogFile: ofstream()
+end loop
+
+== Display Logs == 
+loop
+WindowManager -> LoggerUI: ui.draw()
+LoggerUI -> LogBuffer: m_buffer.snapshot()
+LogBuffer --> LoggerUI: vector<Entry>
+note over WindowManager
+    Draw new frame based on the data contained in the new snapshot
+end note
+end loop
+
+@enduml
