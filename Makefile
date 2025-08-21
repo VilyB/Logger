@@ -8,7 +8,7 @@ PKG_LIBS   := $(shell pkg-config --libs sdl2)
 # ImGui paths (submodule)
 IMGUI_DIR := ./libraries/imgui
 
-INCLUDES := -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends $(PKG_CFLAGS)
+INCLUDES := -Isrc/core -Isrc/io -Isrc/net -Isrc/ui -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends $(PKG_CFLAGS)
 SOURCES  := ./src/*.cpp \
             $(IMGUI_DIR)/imgui.cpp \
             $(IMGUI_DIR)/imgui_draw.cpp \

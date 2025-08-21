@@ -4,13 +4,9 @@
 #include <mutex>
 #include <deque>
 #include <vector>
+#include <optional>
 
-struct Entry
-{
-    std::string timestamp;
-    std::string app;
-    std::string message;
-};
+#include "Entry.h"
 
 class LogBuffer
 {
