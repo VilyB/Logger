@@ -64,8 +64,8 @@ private:
 
                         if (auto e = parseEntryJson(std::string_view(line)))
                         {
-                            m_logBuffer.push(std::move(*e));
-                            m_fileLogger.log(std::move(*e));
+                            m_logBuffer.push(*e);
+                            m_fileLogger.log(*e);
                         }
                     }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-
+#include <fstream>
 #include "Entry.h"
 
 class FileLogger
@@ -20,5 +20,16 @@ public:
 
     void log(Entry e)
     {
+        std::ofstream ofs(m_filepath, std::ios::out | std::ios::app);
+        if (!ofs)
+        {
+            return;
+        }
+
+        ofs << '{'
+            << "\"timestamp\":\"" << e.timestamp << "\","
+            << "\"app\":\"" << e.app << "\","
+            << "\"message\":\"" << e.message << "\""
+            << "}\n";
     }
 };
