@@ -31,6 +31,8 @@ Messages are sent one at a time over a persistent TCP connection and are newline
 - C++17
 - SDL2 (added as a submodule)
 - ImGui (added as a submodule)
+- cmake (build SDL if necessary)
+- make (build logger)
 
 ### Ubuntu/Debian
 ```
