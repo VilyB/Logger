@@ -32,3 +32,7 @@ run:
 clean:
 	@echo "cleaning..."
 	@rm -f $(BIN)
+
+valgrind:
+	@echo "running with valgrind..."
+	@valgrind --leak-check=full --log-file=valgrind.log ./bin/logger
