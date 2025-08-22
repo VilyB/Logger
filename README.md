@@ -3,7 +3,7 @@
 A tiny SDL2 + ImGui app that listens on 127.0.0.1:8000 for JSON log messages, shows them in a table, and writes them to disk.
 
 ## Scope
-- Application can run on Windows & Ubuntu
+- Application can run on Ubuntu (Windows portability WIP)
 - Open a TCP socket on 127.0.0.1:8000
 - Receive JSON messages from external clients through TCP socket
 - Display messages in a GUI
@@ -29,7 +29,7 @@ Messages are sent one at a time over a persistent TCP connection and are newline
 ## Dependencies
 
 - C++17
-- SDL2 (added as a submodule)
+- SDL2 (added as a submodule, however SDL2 is imported through package manager instead)
 - ImGui (added as a submodule)
 - cmake (build SDL if necessary)
 - make (build logger)
