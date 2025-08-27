@@ -2,3 +2,4 @@ logs/*
 bin/*
 imgui.ini
 valgrind.log
+build/*

@@ -4,9 +4,16 @@
 
 struct Entry
 {
-    std::string timestamp;
-    std::string app;
     std::string message;
+    std::string app;
+    std::string timestamp;
+
+    Entry(const std::string &message = "", const std::string &app = "", const std::string &timestamp = "")
+    {
+        this->message = message;
+        this->app = app;
+        this->timestamp = timestamp;
+    };
 };
 
 ////////////////////////////////////////////////////////////////

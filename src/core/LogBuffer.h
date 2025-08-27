@@ -21,8 +21,17 @@ public:
     void push(Entry e)
     {
         std::lock_guard<std::mutex> lock(m_mut);
+
+        if (m_cap == 0)
+        {
+            return;
+        }
+
         if (m_dq.size() == m_cap)
+        {
             m_dq.pop_front();
+        }
+
         m_dq.push_back(std::move(e));
     }
 

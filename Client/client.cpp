@@ -38,7 +38,7 @@ static void producer(std::atomic<bool> &alive)
 
     while (alive.load(std::memory_order_relaxed))
     {
-        const char *message = "{\"timestamp\":\"123123213\", \"app\":\"some_other_app\",\"message\":\"some message\"}\n";
+        const char *message = "{\"timestamp\":\"123123213\", \"app\":\"some_other_app\",\"message\":\"Some OTHER message\"}\n";
         ssize_t n = send(clientSocket, message, std::strlen(message), 0);
         if (n == -1)
         {

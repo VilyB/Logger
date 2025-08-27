@@ -1,38 +1,66 @@
-CC := g++
-CXXFLAGS := -std=c++17 -Wall -Wfatal-errors
+BUILD_DIR := build
+CMAKE_BUILD_TYPE := Debug
 
-# System SDL2 via pkg-config
-PKG_CFLAGS := $(shell pkg-config --cflags sdl2)
-PKG_LIBS   := $(shell pkg-config --libs sdl2)
+.PHONY: build run clean test valgrind configure release help
 
-# ImGui paths (submodule)
-IMGUI_DIR := ./libraries/imgui
+# Default target
+all: build
 
-INCLUDES := -Isrc/core -Isrc/io -Isrc/net -Isrc/ui -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends $(PKG_CFLAGS)
-SOURCES  := ./src/*.cpp \
-            $(IMGUI_DIR)/imgui.cpp \
-            $(IMGUI_DIR)/imgui_draw.cpp \
-            $(IMGUI_DIR)/imgui_tables.cpp \
-            $(IMGUI_DIR)/imgui_widgets.cpp \
-            $(IMGUI_DIR)/backends/imgui_impl_sdl2.cpp \
-            $(IMGUI_DIR)/backends/imgui_impl_sdlrenderer2.cpp
+# Configure CMake (run automatically when needed)
+$(BUILD_DIR)/Makefile: CMakeLists.txt
+	@echo "Configuring CMake..."
+	@mkdir -p $(BUILD_DIR)
+	@cd $(BUILD_DIR) && cmake .. -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE)
 
-BIN := bin/logger
+configure: $(BUILD_DIR)/Makefile
 
-.PHONY: build run clean
+# Build the project
+build: $(BUILD_DIR)/Makefile
+	@echo "Building..."
+	@cd $(BUILD_DIR) && $(MAKE) -j$(nproc)
 
-build:
-	@echo "building..."
-	@$(CC) $(CXXFLAGS) $(INCLUDES) $(SOURCES) -o $(BIN) $(PKG_LIBS)
+# Run the main program
+run: build
+	@echo "Running..."
+	@./$(BUILD_DIR)/bin/logger
 
-run:
-	@echo "running..."
-	@./$(BIN)
+# Run tests
+test: build
+	@echo "Running tests..."
+	@cd $(BUILD_DIR) && ctest --output-on-failure
 
+# Run tests directly (alternative)
+test-run: build
+	@echo "Running tests directly..."
+	@./$(BUILD_DIR)/logger_tests
+
+# Clean build artifacts
 clean:
-	@echo "cleaning..."
-	@rm -f $(BIN)
+	@echo "Cleaning..."
+	@rm -rf $(BUILD_DIR)
 
-valgrind:
-	@echo "running with valgrind..."
-	@valgrind --leak-check=full --log-file=valgrind.log ./bin/logger
+# Build in release mode
+release:
+	@$(MAKE) CMAKE_BUILD_TYPE=Release build
+
+# Run with valgrind
+valgrind: build
+	@echo "Running with valgrind..."
+	@valgrind --leak-check=full --log-file=valgrind.log ./$(BUILD_DIR)/bin/logger
+
+# Force rebuild
+rebuild: clean build
+
+# Show available targets
+help:
+	@echo "Available targets:"
+	@echo "  build     - Build the project (default)"
+	@echo "  run       - Build and run the main program"
+	@echo "  test      - Build and run tests with ctest"
+	@echo "  test-run  - Build and run tests directly"
+	@echo "  clean     - Remove build directory"
+	@echo "  release   - Build in release mode"
+	@echo "  valgrind  - Run with valgrind"
+	@echo "  rebuild   - Clean and build"
+	@echo "  configure - Force CMake reconfiguration"
+	@echo "  help      - Show this help"
