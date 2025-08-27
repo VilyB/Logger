@@ -4,32 +4,25 @@
 #include <fstream>
 #include "Entry.h"
 
-class FileLogger
+class ILogger
+{
+public:
+    virtual ~ILogger() = default;
+    virtual void log(Entry entry) = 0;
+};
+
+class FileLogger : public ILogger
 {
 private:
     std::string m_filepath;
 
 public:
-    FileLogger(const std::string &filepath) : m_filepath(filepath) {};
-    ~FileLogger() = default;
+    FileLogger(const std::string &filepath);
 
     FileLogger(const FileLogger &) = delete;
     FileLogger &operator=(const FileLogger &) = delete;
     FileLogger(FileLogger &&) = delete;
     FileLogger &operator=(FileLogger &&) = delete;
 
-    void log(Entry e)
-    {
-        std::ofstream ofs(m_filepath, std::ios::out | std::ios::app);
-        if (!ofs)
-        {
-            return;
-        }
-
-        ofs << '{'
-            << "\"timestamp\":\"" << e.timestamp << "\","
-            << "\"app\":\"" << e.app << "\","
-            << "\"message\":\"" << e.message << "\""
-            << "}\n";
-    }
+    void log(Entry e) override;
 };
