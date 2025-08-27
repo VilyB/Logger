@@ -8,42 +8,26 @@
 
 #include "Entry.h"
 
-class LogBuffer
+class ILogBuffer
+{
+public:
+    virtual ~ILogBuffer() = default;
+    virtual void push(Entry) = 0;
+    virtual std::vector<Entry> snapshot() const = 0;
+    virtual void clear() = 0;
+};
+
+class LogBuffer : public ILogBuffer
 {
 private:
     mutable std::mutex m_mut;
     std::deque<Entry> m_dq;
-    size_t m_cap;
+    const size_t m_cap;
 
 public:
-    LogBuffer(size_t capacity) : m_cap(capacity) {};
+    LogBuffer(size_t capacity);
 
-    void push(Entry e)
-    {
-        std::lock_guard<std::mutex> lock(m_mut);
-
-        if (m_cap == 0)
-        {
-            return;
-        }
-
-        if (m_dq.size() == m_cap)
-        {
-            m_dq.pop_front();
-        }
-
-        m_dq.push_back(std::move(e));
-    }
-
-    std::vector<Entry> snapshot() const
-    {
-        std::lock_guard<std::mutex> lock(m_mut);
-        return {m_dq.begin(), m_dq.end()};
-    }
-
-    void clear()
-    {
-        std::lock_guard<std::mutex> lock(m_mut);
-        m_dq.clear();
-    }
+    void push(Entry entry) override;
+    std::vector<Entry> snapshot() const override;
+    void clear() override;
 };
